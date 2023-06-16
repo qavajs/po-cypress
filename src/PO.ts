@@ -1,23 +1,16 @@
 import parseTokens, { Token } from './parseTokens';
-import { Page, Locator } from 'playwright';
 import { Definition } from './register';
 
-interface PageObject {
+interface anyObject {
     selector?: string;
 }
 
-interface ExtendedLocator extends Locator {
-    alias: string;
-}
-
-type Locatable = Page | Locator;
-
 class PO {
 
-    private driver: Page | null = null;
+    private driver: any = null;
     private config: { timeout?: number } = {};
 
-    public init(driver: Page, options = { timeout: 2000 }) {
+    public init(driver: any, options = { timeout: 2000 }) {
         this.driver = driver;
         this.config.timeout = options.timeout;
     }
@@ -26,19 +19,18 @@ class PO {
      * Get element from page object
      * @public
      * @param {string} alias
-     * @returns { Locator }
+     * @returns { any }
      */
-    public async getElement(alias: string): Promise<ExtendedLocator> {
+    public getElement(alias: string): any {
         if (!this.driver) throw new Error('Driver is not attached. Call po.init(driver)')
         const tokens: Array<Token> = parseTokens(alias);
-        let element: Locatable = this.driver;
-        let po: PO | PageObject = this;
-        await this.driver.waitForLoadState();
+        let element: any = this.driver;
+        let po: PO | anyObject = this;
         while (tokens.length > 0) {
             const token = tokens.shift() as Token;
-            [element, po] = await this.getEl(element, po, token);
+            [element, po] = this.getEl(element, po, token);
         }
-        const extendedElement = element as ExtendedLocator;
+        const extendedElement = element as any;
         extendedElement.alias = alias;
         return extendedElement
     }
@@ -53,73 +45,71 @@ class PO {
     /**
      * Get element by provided page object and token
      * @private
-     * @param {Page | Locator} element
+     * @param {any} element
      * @param {Object} po
      * @param {Token} token
      * @returns
      */
-    private async getEl(element: Page | Locator, po: Object, token: Token): Promise<[Locatable, Object] | undefined> {
+    private getEl(element: any, po: Object, token: Token): any {
         const elementName: string = token.elementName.replace(/\s/g, '');
         // @ts-ignore
         const newPo: Definition = po[elementName];
         if (!newPo) throw new Error(`${token.elementName} is not found`);
-        const currentElement = (newPo.ignoreHierarchy ? await this.driver : await element) as Locatable;
+        const currentElement = (newPo.ignoreHierarchy ? this.driver : element) as any;
         if (!newPo.isCollection && token.suffix) throw new Error(`Unsupported operation. ${token.elementName} is not collection`);
         if (newPo.isCollection && !newPo.selector) throw new Error(`Unsupported operation. ${token.elementName} selector property is required as it is collection`);
         if (!newPo.selector) return [currentElement, newPo];
 
         if (newPo.isCollection && token.suffix === 'in') return [
-            await this.getElementByText(currentElement, newPo, token),
+             this.getElementByText(currentElement, newPo, token),
             newPo
         ];
         if (newPo.isCollection && token.suffix === 'of') return [
-            await this.getElementByIndex(currentElement, newPo, token),
+             this.getElementByIndex(currentElement, newPo, token),
             newPo
         ];
-        return [await this.getSingleElement(currentElement, newPo.selector), newPo]
+        return [ this.getSingleElement(currentElement, newPo.selector), newPo ]
     }
 
     /**
      * @private
-     * @param {Locatable} element - element to get
+     * @param {any} element - element to get
      * @param {Definition} po - page object
      * @param {Token} token - token
      * @returns
      */
-    private async getElementByText(element: Locatable, po: Definition, token: Token): Promise<Locator> {
+    private getElementByText(element: any, po: Definition, token: Token): any {
         const tokenValue = token.value as string;
         if (token.prefix === '#') {
-            return element.locator(po.selector, { hasText: tokenValue }).nth(0);
-        }
-        if (token.prefix === '@') {
-            return element.locator(po.selector, { hasText: new RegExp(`^${tokenValue}$`) }).nth(0);
-        }
-        if (token.prefix === '/') {
-            return element.locator(po.selector, { hasText: new RegExp(tokenValue) }).nth(0);
+            return element[this.getNestingCommand(element)](po.selector).filter(`:contains("${tokenValue}")`).first();
         }
         throw new Error(`${token.prefix} is not supported`)
     }
 
     /**
      * @private
-     * @param {Locatable} element - element to get
+     * @param {any} element - element to get
      * @param {Definition} po - page object
      * @param {Token} token - token
      * @returns
      */
-    private async getElementByIndex(element: Locatable, po: Definition, token: Token): Promise<Locator> {
+    private getElementByIndex(element: any, po: Definition, token: Token): any {
         const index = parseInt(token.value as string) - 1;
-        return element.locator(po.selector).nth(index);
+        return element[this.getNestingCommand(element)](po.selector).eq(index);
     }
 
     /**
      * @private
-     * @param {Locatable} element - element to get
+     * @param {any} element - element to get
      * @param {string} selector - selector
      * @returns
      */
-    private async getSingleElement(element: Locatable, selector: string) {
-        return element.locator(selector);
+    private getSingleElement(element: any, selector: string) {
+        return element[this.getNestingCommand(element)](selector);
+    }
+
+    private getNestingCommand(element: any) {
+        return element === this.driver ? 'get' : 'find';
     }
 
 }

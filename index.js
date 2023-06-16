@@ -1,4 +1,4 @@
-const po = require('./lib/PO').default;
+const po = require('./lib/PO');
 const { $, $$ } = require('./lib/register');
 const { Component } = require('./lib/Component');
 

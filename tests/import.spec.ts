@@ -1,19 +1,22 @@
-import {test, expect} from 'vitest';
 import {po, $, $$, Component} from '../index';
 
-test('po', () => {
-    expect(po.init).toBeInstanceOf(Function);
-    expect(po.getElement).toBeInstanceOf(Function);
+describe('import', function () {
+    it('po', () => {
+        console.log(po)
+        expect(po.init).to.be.instanceof(Function);
+        expect(po.getElement).to.be.instanceof(Function);
+    });
+
+    it('$', () => {
+        expect($).to.be.instanceof(Function);
+    });
+
+    it('$$', () => {
+        expect($$).to.be.instanceof(Function);
+    });
+
+    it('Component', () => {
+        expect(Component).to.be.instanceof(Function);
+    });
 });
 
-test('$', () => {
-    expect($).toBeInstanceOf(Function);
-});
-
-test('$$', () => {
-    expect($$).toBeInstanceOf(Function);
-});
-
-test('Component', () => {
-    expect(Component).toBeInstanceOf(Function);
-});

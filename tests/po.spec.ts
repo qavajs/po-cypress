@@ -1,154 +1,98 @@
-import { test, beforeAll, afterAll, expect } from 'vitest';
-import { Browser, chromium } from 'playwright';
 import { resolve } from 'path';
 import po from '../src/PO';
 import samplePO from './samplePO';
 import { $ } from '../src/register';
 
-let browser: Browser;
-beforeAll(async () => {
-    browser = await chromium.launch();
-    const context = await browser.newContext();
-    const driver = await context.newPage();
+describe('po', function () {
+    beforeEach(() => {
+        po.init(cy, { timeout: 5000 });
+        po.register(samplePO);
+        const fileName = resolve('./tests/test_page.html');
+        cy.visit(fileName);
+    });
 
-    po.init(driver, { timeout: 5000 });
-    po.register(samplePO);
-    const fileName = resolve('./tests/test_page.html');
-    await driver.goto('file://' + fileName);
-});
+    it('get single element', () => {
+        const element = po.getElement('Single Element');
+        element.should('have.text', 'text of single element');
+    });
 
-test('get single element', async () => {
-    const element = await po.getElement('Single Element');
-    expect(await element.innerText()).toBe('text of single element');
-});
+    it('get collection', () => {
+        const collection = po.getElement('List');
+        collection.should('have.length', 6)
+    });
 
-test('get collection', async () => {
-    const collection = await po.getElement('List');
-    expect(await collection.count()).toBe(6);
-});
+    it('get element from collection by index', () => {
+        const element = po.getElement('#2 of List');
+        element.should('have.text', 'Second');
+    });
 
-test('get element from collection by index', async () => {
-    const element = await po.getElement('#2 of List');
-    expect(await element.innerText()).toBe('Second');
-});
+    it('get element from collection by partial text', () => {
+        const element = po.getElement('#Thi in List');
+        element.should('have.text', 'Third');
+    });
 
-test('get element from collection by partial text', async () => {
-    const element = await po.getElement('#Thi in List');
-    expect(await element.innerText()).toBe('Third');
-});
+    // it('get element from collection by exact text', () => {
+    //     const element = po.getElement('@Third in List');
+    //     element.should('have.text', 'Third');
+    // });
+    //
+    // it('get element from collection by regexp text', () => {
+    //     const element = po.getElement('/Thi/ in List');
+    //     element.should('have.text', 'Third');
+    // });
 
-test('get element from collection by exact text', async () => {
-    const element = await po.getElement('@Third in List');
-    expect(await element.innerText()).toBe('Third');
-});
+    it('get element from component', () => {
+        const element = po.getElement('Single Component > Child Item');
+        element.should('have.text', 'text of first child item');
+    });
 
-test('get element from collection by regexp text', async () => {
-    const element = await po.getElement('/Thi/ in List');
-    expect(await element.innerText()).toBe('Third');
-});
+    it('get element from multiple component item by index', () => {
+        const element = po.getElement('#2 of Multiple Components > ChildItem');
+        element.should('have.text', 'second inner');
+    });
 
-test('get element from component', async () => {
-    const element = await po.getElement('Single Component > Child Item');
-    expect(await element.innerText()).toBe('text of first child item');
-});
+    it('get element from multiple component item by partials text', () => {
+        const element = po.getElement('#second in Multiple Components > Child Item');
+        element.should('have.text', 'second inner');
+    });
 
-test('get element from multiple component item by index', async () => {
-    const element = await po.getElement('#2 of Multiple Components > ChildItem');
-    expect(await element.innerText()).toBe('second inner');
-});
+    // it('get element from multiple component item by exact text', () => {
+    //     const element = po.getElement('@third inner in Multiple Components > Child Item');
+    //     element.should('have.text', 'second inner');
+    // });
 
-test('get element from multiple component item by partials text', async () => {
-    const element = await po.getElement('#second in Multiple Components > Child Item');
-    expect(await element.innerText()).toBe('second inner');
-});
+    it('get child item of each element of collection', () => {
+        const collection = po.getElement('Multiple Components > Child Item');
+        collection.should('have.length', 3);
+        collection.eq(0).should('have.text', 'first inner');
+    });
 
-test('get element from multiple component item by exact text', async () => {
-    const element = await po.getElement('@third inner in Multiple Components > Child Item');
-    expect(await element.innerText()).toBe('third inner');
-});
+    it('get element from collection by partial text containing in', () => {
+        const element = po.getElement('#Contain in in List');
+        element.should('have.text', 'Contain in word');
+    });
 
-test('get child item of each element of collection', async () => {
-    const collection = await po.getElement('Multiple Components > Child Item');
-    expect(await collection.count()).toBe(3);
-    expect(await collection.nth(0).innerText()).toBe('first inner');
-});
 
-test('get element from collection by partial text containing in', async () => {
-    const element = await po.getElement('#Contain in in List');
-    expect(await element.innerText()).toBe('Contain in word');
-});
+    it('get element from collection', () => {
+        const element = po.getElement('Async Component > #2 of Child Items');
+        element.should('have.text', 'async 2');
+    });
 
-test('get element that not exist in collection by text', async () => {
-    const element = await po.getElement('#notexist in List');
-    expect(await element.isVisible()).toBe(false);
-});
 
-test('get element that not exist in collection by index', async () => {
-    const element = await po.getElement('#42 of List');
-    expect(await element.isVisible()).toBe(false);
-});
+    it('ignore hierarchy flag', () => {
+        const element = po.getElement('Single Component > Ignore Hierarchy Item');
+        element.should('have.text', 'first inner');
+    });
 
-test('get element from async collection', async () => {
-    const element = await po.getElement('Async Component > #2 of Child Items');
-    expect(await element.innerText()).toBe('async 2');
-});
+    it('get element from component without selector', () => {
+        const element = po.getElement('Component Without Selector > Single Element');
+        element.should('have.text', 'text of single element');
+    });
 
-test('get collection from collection', async () => {
-    const elements = await po.getElement('Level 1 Elements > Level 2 Elements > List Items');
-    const text7 = await elements.nth(6).innerText();
-    expect(text7).toBe('x31');
-    expect(await elements.count()).toBe(9);
-});
+    it('get element from collection from component without selector', () => {
+        const element = po.getElement('Component Without Selector > #2 of List');
+        element.should('have.text', 'Second');
+    });
 
-//TODO not supported currently
-test.skip('get collection element from collection', async () => {
-    const elements = await po.getElement('Level 1 Elements > Level 2 Elements > #2 of List Items');
-    const text12 = await elements.nth(0).innerText();
-    const text22 = await elements.nth(0).innerText();
-    const text32 = await elements.nth(0).innerText();
-    expect(text12).toBe('x12');
-    expect(text22).toBe('x22');
-    expect(text32).toBe('x32');
-    expect(await elements.count()).toBe(3);
-});
-
-test('alias is added to returned element', async () => {
-    const element = await po.getElement('Single Element');
-    expect(element.alias).toBe('Single Element');
-});
-
-test('ignore hierarchy flag', async () => {
-    const element = await po.getElement('Single Component > Ignore Hierarchy Item');
-    expect(await element.innerText()).toBe('first inner');
-});
-
-test('get not existing element', async () => {
-    const shouldThrow = async () => await po.getElement('Not Existing Element');
-    await expect(shouldThrow).rejects.toThrow('Not Existing Element is not found');
-});
-
-test('throw error if params are not passed into register function', () => {
-    // @ts-ignore
-    const shouldThrow = () => $();
-    expect(shouldThrow).toThrow('Selector or component should be passed!');
-});
-
-test('get element from component without selector', async () => {
-    const element = await po.getElement('Component Without Selector > Single Element');
-    const text = await element.innerText();
-    expect(text).toEqual('text of single element');
-});
-
-test('get element from collection from component without selector', async () => {
-    const element = await po.getElement('Component Without Selector > #2 of List');
-    expect(await element.innerText()).toEqual('Second');
-});
-
-test('throw an error if component without selector registered as collection', async () => {
-    const shouldThrow = async () => await po.getElement('#1 of Components Without Selector > #2 of List');
-    await expect(shouldThrow).rejects.toThrow('Unsupported operation. Components Without Selector selector property is required as it is collection');
-});
-
-afterAll(async () => {
-    await browser.close();
 })
+

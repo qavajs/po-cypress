@@ -8,7 +8,7 @@ class MultipleComponent extends Component {
 class SingleComponent {
     selector = '.container';
 
-    ChildItem = $('.child-item');
+    ChildItem = $('.child-item span');
     IgnoreHierarchyItem = $('.list-components > li:first-child', { ignoreHierarchy: true });
 }
 
@@ -38,12 +38,12 @@ class NotExistingComponent {
 }
 
 class ComponentWithoutSelector {
-    SingleElement = $('.single-element');
+    SingleElement = $('.single-element span');
     List = $$('.list li');
 }
 
 class App {
-    SingleElement = $('.single-element');
+    SingleElement = $('.single-element span');
     List = $$('.list li');
     SingleComponent = $(new SingleComponent());
     MultipleComponents = $$(new MultipleComponent('.list-components li'));
