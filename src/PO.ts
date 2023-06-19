@@ -129,4 +129,4 @@ class PO {
 
 }
 
-export default new PO();
+export const po = new PO();
