@@ -31,15 +31,15 @@ describe('po', function () {
         element.should('have.text', 'Third');
     });
 
-    // it('get element from collection by exact text', () => {
-    //     const element = po.getElement('@Third in List');
-    //     element.should('have.text', 'Third');
-    // });
-    //
-    // it('get element from collection by regexp text', () => {
-    //     const element = po.getElement('/Thi/ in List');
-    //     element.should('have.text', 'Third');
-    // });
+    it('get element from collection by exact text', () => {
+        const element = po.getElement('@Third in List');
+        element.should('have.text', 'Third');
+    });
+
+    it('get element from collection by regexp text', () => {
+        const element = po.getElement('/Thi/ in List');
+        element.should('have.text', 'Third');
+    });
 
     it('get element from component', () => {
         const element = po.getElement('Single Component > Child Item');
@@ -56,10 +56,10 @@ describe('po', function () {
         element.should('have.text', 'second inner');
     });
 
-    // it('get element from multiple component item by exact text', () => {
-    //     const element = po.getElement('@third inner in Multiple Components > Child Item');
-    //     element.should('have.text', 'second inner');
-    // });
+    it('get element from multiple component item by exact text', () => {
+        const element = po.getElement('@third inner in Multiple Components > Child Item');
+        element.should('have.text', 'third inner');
+    });
 
     it('get child item of each element of collection', () => {
         const collection = po.getElement('Multiple Components > Child Item');

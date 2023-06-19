@@ -83,6 +83,21 @@ class PO {
         if (token.prefix === '#') {
             return element[this.getNestingCommand(element)](po.selector).filter(`:contains("${tokenValue}")`).first();
         }
+        if (token.prefix === '@') {
+            return element[this.getNestingCommand(element)](po.selector).then((elements: any) => {
+                return elements.filter((index: number, element: any) => {
+                    return element.innerText === tokenValue
+                })
+            }).first();
+        }
+        if (token.prefix === '/') {
+            return element[this.getNestingCommand(element)](po.selector).then((elements: any) => {
+                const regexp = new RegExp(tokenValue);
+                return elements.filter((index: number, element: any) => {
+                    return regexp.test(element.innerText)
+                })
+            }).first();
+        }
         throw new Error(`${token.prefix} is not supported`)
     }
 
