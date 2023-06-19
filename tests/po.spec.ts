@@ -1,5 +1,5 @@
 import { resolve } from 'path';
-import po from '../src/PO';
+import { po } from '../src/PO';
 import samplePO from './samplePO';
 import { $ } from '../src/register';
 
