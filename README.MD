@@ -1,7 +1,7 @@
 ## @qavajs/po-cypress
 
 This library provides the ability to create hierarchical page objects and access elements using plain-english selectors.
-Works on top of Playwright.
+Works on top of Cypress.
 
 `npm install @qavajs/po-cypress`
 ## Usage
