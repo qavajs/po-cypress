@@ -1,11 +1,16 @@
 import { resolve } from 'path';
 import { po } from '../src/PO';
 import samplePO from './samplePO';
-import { $ } from '../src/register';
 
+const logger = {
+    log: (value: string) => {
+        const [displayName, message] = value.split(/\s->\s/);
+        Cypress.log({ displayName, message })
+    }
+}
 describe('po', function () {
     beforeEach(() => {
-        po.init(cy, { timeout: 5000 });
+        po.init(cy, { timeout: 5000, logger });
         po.register(samplePO);
         const fileName = resolve('./tests/test_page.html');
         cy.visit(fileName);
@@ -92,6 +97,23 @@ describe('po', function () {
     it('get element from collection from component without selector', () => {
         const element = po.getElement('Component Without Selector > #2 of List');
         element.should('have.text', 'Second');
+    });
+
+
+    it('get collection by parametrised selector', () => {
+        const element = po.getElement('Parametrized List (odd)');
+        element.should('have.length', 3)
+    });
+
+    it('get native single element', () => {
+        const element = po.getElement('Native Selector Single Element');
+        // console.log(element)
+        element.should('contain.text', 'text of single element');
+    });
+
+    it('get native collection', () => {
+        const collection = po.getElement('Native Selector List');
+        collection.should('have.length', 6)
     });
 
 })
