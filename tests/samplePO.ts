@@ -1,5 +1,6 @@
 import { $, $$ } from '../src/register';
 import { Component } from '../src/Component';
+import { Selector, NativeSelector } from '../src/Selector';
 
 class MultipleComponent extends Component {
     ChildItem = $('div');
@@ -52,6 +53,9 @@ class App {
     NotExistingComponent = $(new NotExistingComponent());
     ComponentWithoutSelector = $(new ComponentWithoutSelector());
     ComponentsWithoutSelector = $$(new ComponentWithoutSelector());
+    NativeSelectorSingleElement = $(NativeSelector((cy) => cy.get('.single-element')));
+    NativeSelectorList = $$(NativeSelector((cy) => cy.get('.list li')));
+    ParametrizedList = $$(Selector((index: string) => `.list li:nth-child(${index})`));
 }
 
 export default new App();

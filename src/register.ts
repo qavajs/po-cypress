@@ -2,9 +2,13 @@ export interface DefinitionOptions {
     ignoreHierarchy: boolean
 }
 export interface Definition {
-    selector: string;
+    selector: any;
     isCollection: boolean;
-    ignoreHierarchy: boolean
+    ignoreHierarchy: boolean;
+    isSelectorFunction?: boolean;
+    isNativeSelector?: boolean;
+    selectorFunction?: Function;
+    resolvedSelector?: any;
 }
 
 /**
@@ -20,7 +24,7 @@ export function register(
     options: DefinitionOptions = { ignoreHierarchy: false }): Definition
 {
     if (!definition) throw new Error('Selector or component should be passed!');
-    if (typeof definition === 'object') {
+    if (typeof definition === 'object' && !((definition as any).isSelectorFunction)) {
         return {
             ...definition,
             isCollection,
